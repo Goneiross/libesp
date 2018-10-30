@@ -4,7 +4,7 @@
 
 #include "serialAddon.h"
 
-int serial_ini(){
+void serial_ini(){
    const int uart_num = UART_NUM_2;
     uart_config_t uart_config = {
         .baud_rate = 115200,
@@ -23,10 +23,15 @@ int serial_ini(){
     esp_console_init(&console_config); 
 }
 
+void printHelp(){
+    printf("(h)elp");
+    printf("(s)ettings");
+    printf("(u)tilities");
+    specificHelp();
+}
+
 void main_serial(char* data){
-    bool end = false;
-    while(not end){
-    }
+    // bool end = false; Faire une boucle pour vider buffer  
 
     switch (data[0]){
         case 'h':
@@ -40,8 +45,3 @@ void main_serial(char* data){
     }
 }
 
-void printHelp(){
-    printf("(h)elp");
-    printf("(s)ettings");
-    printf("(u)tilities");
-}
