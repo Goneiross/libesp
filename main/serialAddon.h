@@ -2,7 +2,7 @@
     Enter your command and help here
 */
 
-void specifiHelp(){
+void specificHelp(){
 
 }
 
@@ -13,7 +13,7 @@ void specificCommand(char* data){
     Built in commands
 */ 
 
-void settinsHelp(){
+void settingsHelp(){
 
 }
 
