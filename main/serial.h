@@ -2,6 +2,8 @@
 #include "driver/uart.h"
 #include "linenoise/linenoise.h"
 
+#include "serialAddon.h"
+
 int serial_ini(){
    const int uart_num = UART_NUM_2;
     uart_config_t uart_config = {
@@ -19,4 +21,27 @@ int serial_ini(){
     uart_param_config(uart_num, &uart_config);
     uart_driver_install(CONFIG_CONSOLE_UART_NUM,256, 0, 0, NULL, 0);
     esp_console_init(&console_config); 
+}
+
+void main_serial(char* data){
+    bool end = false;
+    while(not end){
+    }
+
+    switch (data[0]){
+        case 'h':
+            printHelp();
+        case 's' :
+            settingsCommand(data);
+        case 'u' :
+            utilityCommand(data);
+        default :
+            specificCommand(data);
+    }
+}
+
+void printHelp(){
+    printf("(h)elp");
+    printf("(s)ettings");
+    printf("(u)tilities");
 }
