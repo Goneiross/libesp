@@ -3,6 +3,7 @@
 #include "linenoise/linenoise.h"
 
 #include "serialAddon.h"
+#include "parameters.h"
 
 void serial_ini(){
    const int uart_num = UART_NUM_2;
@@ -30,8 +31,26 @@ void printHelp(){
     specificHelp();
 }
 
+void printParameters(){
+    for (int i = 0; i < PARAM_MAX; i++){
+        printf("#%i : %i",i,parameters[i]);
+    }
+}
+
 void main_serial(char* data){
-    // bool end = false; Faire une boucle pour vider buffer  
+    bool end = false;
+    uint8_t i = 0;
+
+    while(!end){
+        if (data[i] == '\0') {end = true;}
+        else if (data[i] > 64 && data[i] < 91){ //If upperCase
+        
+        }
+        else if ((data[i] > 47 && data[i] < 58) || data[i] == '-'){ //If lowerCase or negative
+
+        }
+        i++;
+    }
 
     switch (data[0]){
         case 'h':
@@ -40,6 +59,8 @@ void main_serial(char* data){
             settingsCommand(data);
         case 'u' :
             utilityCommand(data);
+        case 'p' :
+            printParameters();
         default :
             specificCommand(data);
     }
