@@ -40,6 +40,7 @@ void printParameters(){
 void main_serial(char* data){
     bool end = false;
     uint8_t i = 0;
+    uint8_t adress = 00;
 
     while(!end){
         if (data[i] == '\0') {end = true;}
