@@ -6,6 +6,8 @@
 #include "parameters.h"
 #include "UART.h"
 
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+
 void printHelp(){
     ESP_LOGD("help","----- SERIAL HELP -----");
     ESP_LOGD("help","(h)elp");
@@ -27,16 +29,24 @@ void main_serial(char* data){
     uint8_t i = 0;
     uint8_t adress = 0x0;
     uint16_t position = 0;
+    int16_t value = 0;
+    bool negative = false;
 
     if (data[0] > 64 && data[i] < 91){ //If upperCase
         position = 0;
+        value = 0;
         i = 0;
+        negative = false;
         while(!end){
             if (data[i] == '\0') {end = true;}
-            else if (data[i] > 64 && data[i] < 91){position += data[i] - 63;}
+            else if (data[i] > 64 && data[i] < 91){position += data[i] - 64;}
+            else if (data[i] > 47 && data[i] < 58){value += data[i] - 47;}
+            else if (data[i] == '-'){negative = true;}
             else {end = true;}
             i++;
         }
+        if (negative){value *= -1;}
+        // WRITE VALUE TO POSITION
     }
     else if (data[i] > 47 && data[i] < 58){ 
 
