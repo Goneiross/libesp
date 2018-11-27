@@ -7,16 +7,18 @@
 #include "UART.h"
 
 void printHelp(){
-    printf("(h)elp");
-    printf("(s)ettings");
-    printf("(u)tilities");
-    printf('(p)arameters');
+    ESP_LOGD("help","----- SERIAL HELP -----");
+    ESP_LOGD("help","(h)elp");
+    ESP_LOGD("help","(s)ettings");
+    ESP_LOGD("help","(u)tilities");
+    ESP_LOGD("help",'(p)arameters');
     specificHelp();
 }
 
 void printParameters(){
     for (int i = 0; i < PARAM_MAX; i++){
-        printf("#%i : %i",i,parameters[i]);
+        ESP_LOGD("parameters","----- ALL DEVICE PARAMETERS -----");
+        ESP_LOGD("parameters","#%i : %i",i,parameters[i]);
     }
 }
 

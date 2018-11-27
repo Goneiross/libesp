@@ -1,5 +1,7 @@
-void settingsHelp(){
+#include "esp_log.h"
 
+void settingsHelp(){
+    ESP_LOGD("help","----- SERIAL SETTINGS HELP -----");
 }
 
 void settingsCommand(char* data){

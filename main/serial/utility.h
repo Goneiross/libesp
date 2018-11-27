@@ -1,5 +1,8 @@
+#include "esp_log.h"
+
 void utilityHelp(){
-    printf("ur - reset");
+    ESP_LOGD("help","----- SERIAL UTILITY HELP -----");
+    ESP_LOGD("help","ur - reset");
 }
 
 void utilityCommand(char* data){
