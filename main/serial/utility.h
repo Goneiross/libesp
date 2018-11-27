@@ -1,4 +1,5 @@
 #include "esp_log.h"
+#include "esp_system.h"
 
 void utilityHelp(){
     ESP_LOGD("help","----- SERIAL UTILITY HELP -----");
