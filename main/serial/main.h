@@ -25,19 +25,21 @@ void printParameters(){
 void main_serial(char* data){
     bool end = false;
     uint8_t i = 0;
-    uint8_t adress = 00;
+    uint8_t adress = 0x0;
+    uint16_t position = 0;
 
-    if (data[0] > 64 && data[i] < 91){
+    if (data[0] > 64 && data[i] < 91){ //If upperCase
+        position = 0;
+        i = 0;
         while(!end){
             if (data[i] == '\0') {end = true;}
-            else if (data[i] > 64 && data[i] < 91){ //If upperCase
-    
-            }
-            else if ((data[i] > 47 && data[i] < 58) || data[i] == '-'){ //If lowerCase or negative
-
-            }
+            else if (data[i] > 64 && data[i] < 91){position += data[i] - 63;}
+            else {end = true;}
             i++;
         }
+    }
+    else if (data[i] > 47 && data[i] < 58){ 
+
     }
     else{
         switch (data[0]){
