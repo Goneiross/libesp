@@ -4,6 +4,7 @@
 
 #include "serialAddon.h"
 #include "parameters.h"
+#include "UART.h"
 
 void serial_ini(){
    const int uart_num = UART_NUM_2;
