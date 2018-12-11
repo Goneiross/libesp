@@ -6,7 +6,34 @@
 #include "parameters.h"
 #include "UART.h"
 
+#include "esp_partition.h"
+
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
+
+void partition_ini(){
+    const esp_partition_t* var = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "var");
+    if (var == NULL){
+        ESP_LOGW("ERROR","No partition named var found");
+        ESP_LOGW("ERROR","Restarting in 10 secs");
+        vTaskDelay(10000/portTICK_RATE_MS);
+        esp_restart();
+    }
+    const esp_partition_t* log = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "log");
+    if (log == NULL){
+        EPS_LOGW("ERROR","No partition named log found");
+        ESP_LOGW("ERROR","Restarting in 10 secs");
+        vTaskDelay(10000/portTICK_RATE_MS);
+        esp_restart();
+    }
+}
+
+void partition_read(){
+    
+}
+
+void partition_write(){
+
+}
 
 void printHelp(){
     ESP_LOGD("help","----- SERIAL HELP -----");
@@ -46,10 +73,12 @@ void main_serial(char* data){
             i++;
         }
         if (negative){value *= -1;}
+            partition_write(partition ,position, value);
+
         // WRITE VALUE TO POSITION
     }
     else if (data[i] > 47 && data[i] < 58){ 
-
+        // GET I2C ADRESS
     }
     else{
         switch (data[0]){
