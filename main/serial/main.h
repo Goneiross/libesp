@@ -6,19 +6,19 @@
 #include "parameters.h"
 #include "UART.h"
 
-#include "esp_partition.h"
+#include "partition.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 
-void partition_ini(){
-    const esp_partition_t* var = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "var");
+void partition_ini(esp_partition_t * var,esp_partition_t * log){
+    var = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "var");
     if (var == NULL){
         ESP_LOGW("ERROR","No partition named var found");
         ESP_LOGW("ERROR","Restarting in 10 secs");
         vTaskDelay(10000/portTICK_RATE_MS);
         esp_restart();
     }
-    const esp_partition_t* log = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "log");
+    log = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "log");
     if (log == NULL){
         EPS_LOGW("ERROR","No partition named log found");
         ESP_LOGW("ERROR","Restarting in 10 secs");
@@ -27,12 +27,20 @@ void partition_ini(){
     }
 }
 
-void partition_read(){
+void partition_read(partition, adress, data*){
+    // GET SIZE
+    esp_partition_read(partition, data, adress, size);
     
 }
 
-void partition_write(){
+void partition_write(partition, adress, data){
 
+}
+
+void parameters_update(esp_partition_t * var, int *parameters[PARAM_MAX]){
+    for (int i = 0; i < PARAM_MAX; i++){
+        partition_read(var, ADRESS_BEGIN + i, parameters[i]);
+    }
 }
 
 void printHelp(){
@@ -44,7 +52,8 @@ void printHelp(){
     specificHelp();
 }
 
-void printParameters(){
+void printParameters(esp_partition_t * var, int *parameters[PARAM_MAX]){
+    parameters_update(var, parameters);
     for (int i = 0; i < PARAM_MAX; i++){
         ESP_LOGD("parameters","----- ALL DEVICE PARAMETERS -----");
         ESP_LOGD("parameters","#%i : %i",i,parameters[i]);
@@ -58,6 +67,12 @@ void main_serial(char* data){
     uint16_t position = 0;
     int16_t value = 0;
     bool negative = false;
+    int parameters[PARAM_MAX];
+
+
+    const esp_partition_t* var = NULL;
+    const esp_partition_t* log = NULL;
+    partition_ini(var, log);
 
     if (data[0] > 64 && data[i] < 91){ //If upperCase
         position = 0;
@@ -89,7 +104,7 @@ void main_serial(char* data){
             case 'u' :
                 utilityCommand(data);
             case 'p' :
-                printParameters();
+                printParameters(var, parameters);
             default :
                 specificCommand(data);
         }
