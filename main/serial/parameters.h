@@ -6,8 +6,8 @@
 #define ADRESS_BEGIN 0x0
 
 /**
- * Variable table (for user info)
+ * Parameters table (for user info)
  * ADRESS           NAME            DEFAULT VALUE
- * 
+ * 0x00             test            0
  * 
  */

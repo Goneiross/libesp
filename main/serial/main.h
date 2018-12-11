@@ -13,24 +13,24 @@
 
 #define PARAM_MAX 8
 
-void partition_write_test(esp_partition_t * partition){
+void partition_write_test(const esp_partition_t * partition){
     esp_partition_write(partition, 0x00, (void *) 0x2A, 2);
 }
 
-void partition_read(esp_partition_t * partition, uint8_t * adress, int16_t data){
+void partition_read(const esp_partition_t * partition, uint8_t * adress, int16_t data){
     int size = 0;
     // GET SIZE
     esp_partition_read(partition, data, adress, size);
 }
 
-void partition_write(esp_partition_t * partition, uint8_t adress, int16_t data){
+void partition_write(const esp_partition_t * partition, uint8_t adress, int16_t data){
     int size = 0;
     // GET SIZE 
     esp_partition_write(partition, adress, (void *)data, size);
 
 }
 
-void parameters_update(esp_partition_t * var, uint16_t * parameters){
+void parameters_update(const esp_partition_t * var, uint16_t * parameters){
     for (uint8_t i = 0; i < PARAM_MAX; i++){
         partition_read(var, (uint8_t *) ADRESS_BEGIN + i, parameters[i]);
     }
@@ -45,7 +45,7 @@ void printHelp(){
     specificHelp();
 }
 
-void printParameters(esp_partition_t * var, uint16_t *parameters){
+void printParameters(const esp_partition_t * var, uint16_t *parameters){
     parameters_update(var, parameters);
     for (int i = 0; i < PARAM_MAX; i++){
         ESP_LOGI("Serial parameters","----- ALL DEVICE PARAMETERS -----");

@@ -2,8 +2,8 @@
 #include "esp_system.h"
 
 void utilityHelp(){
-    ESP_LOGD("help","----- SERIAL UTILITY HELP -----");
-    ESP_LOGD("help","ur - reset");
+    ESP_LOGI("Serial help","----- SERIAL UTILITY HELP -----");
+    ESP_LOGI("Serial help","ur - reset");
 }
 
 void utilityCommand(char* data){

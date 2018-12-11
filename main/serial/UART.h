@@ -1,5 +1,7 @@
+#include "string.h"
+
 void serial_ini(){
-   const int uart_num = UART_NUM_2;
+   const uart_port_t uart_num = UART_NUM_2;
     uart_config_t uart_config = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
@@ -13,7 +15,7 @@ void serial_ini(){
             .max_cmdline_length = 256,
     };
     uart_param_config(uart_num, &uart_config);
-    uart_driver_install(CONFIG_CONSOLE_UART_NUM,256, 0, 0, NULL, 0);
+    uart_driver_install((uart_port_t)CONFIG_CONSOLE_UART_NUM,256, 0, 0, NULL, 0);
     esp_console_init(&console_config); 
 }
 
@@ -35,7 +37,7 @@ uint16_t UART_sendData(uart_port_t uart_num, const char *log, const char *data)
 uint16_t UART_receiveData(uart_port_t uart_num, const char *log, int expected)
 {
     uint16_t *data[2048];
-    int readBytes = uart_read_bytes(uart_num, &data, 8, 5000);
+    int readBytes = uart_read_bytes(uart_num, data, 8, 5000); // &data ?
     if (readBytes > 0)
     {
         if ((expected == -1) || (readBytes == expected))
@@ -52,6 +54,5 @@ uint16_t UART_receiveData(uart_port_t uart_num, const char *log, int expected)
         ESP_LOGI("LoRa868T20D_READ", "No data read");
     }
 
-    printf(data);
     return (data);
 }
