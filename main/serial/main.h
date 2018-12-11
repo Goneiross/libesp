@@ -28,12 +28,15 @@ void partition_ini(esp_partition_t * var,esp_partition_t * log){
 }
 
 void partition_read(partition, adress, data*){
+    int size = 0;
     // GET SIZE
     esp_partition_read(partition, data, adress, size);
-    
 }
 
 void partition_write(partition, adress, data){
+    int size = 0;
+    // GET SIZE 
+    esp_partition_write(partition, adress, data, size);
 
 }
 
