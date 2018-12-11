@@ -5,4 +5,9 @@
 
 #define ADRESS_BEGIN 0x0
 
-int parameters[PARAM_MAX];
+/**
+ * Variable table (for user info)
+ * ADRESS           NAME            DEFAULT VALUE
+ * 
+ * 
+ */
