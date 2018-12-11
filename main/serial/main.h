@@ -6,7 +6,7 @@
 #include "parameters.h"
 #include "UART.h"
 
-#include "partition.h"
+#include "esp_partition.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 
@@ -27,7 +27,7 @@ void partition_ini(esp_partition_t * var,esp_partition_t * log){
     }
 }
 
-void partition_read(partition, adress, data*){
+void partition_read(partition, adress, data *){
     int size = 0;
     // GET SIZE
     esp_partition_read(partition, data, adress, size);
@@ -91,7 +91,7 @@ void main_serial(char* data){
             i++;
         }
         if (negative){value *= -1;}
-            partition_write(partition ,position, value);
+            partition_write(var ,position, value);
 
         // WRITE VALUE TO POSITION
     }
