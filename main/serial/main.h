@@ -2,6 +2,7 @@
 #include "esp_console.h"
 #include "esp_partition.h"
 #include "linenoise/linenoise.h"
+#include "esp_spi_flash.h"
 
 #include "esp_log.h"
 
@@ -13,21 +14,32 @@
 
 #define PARAM_MAX 8
 
-void partition_write_test(const esp_partition_t * partition){
-    esp_partition_write(partition, 0x00, (void *) 0x2A, 2);
-}
-
 void partition_read(const esp_partition_t * partition, uint8_t * adress, int16_t data){
-    int size = 0;
+    int size = 0 ;
     // GET SIZE
-    esp_partition_read(partition, data, adress, size);
+    esp_err_t  err = esp_partition_read(partition, data, adress, size);
+    if (err != ESP_OK){
+        ESP_LOGI("Serial ERROR","Could not read data");
+    }
 }
 
 void partition_write(const esp_partition_t * partition, uint8_t adress, int16_t data){
     int size = 0;
     // GET SIZE 
-    esp_partition_write(partition, adress, (void *)data, size);
+    esp_err_t  err = esp_partition_erase_range(partition, adress, 4096);
+    if (err != ESP_OK){
+            ESP_LOGI("Serial ERROR","Could not erase data");
+    }
+    err = esp_partition_write(partition, adress, (void *)data, size);
+    if (err != ESP_OK){
+        ESP_LOGI("Serial ERROR","Could not write data");
+    }
+}
 
+void partition_write_test(const esp_partition_t * partition){
+    esp_partition_erase_range(partition, 0x00, 4096);
+    esp_partition_write(partition, 0x0001, (const void *) 0xA2, 2);
+    ESP_LOGI("Serial test","TEST");
 }
 
 void parameters_update(const esp_partition_t * var, uint16_t * parameters){
@@ -47,17 +59,21 @@ void printHelp(){
 
 void printParameters(const esp_partition_t * var, uint16_t *parameters){
     parameters_update(var, parameters);
+    ESP_LOGI("Serial parameters","----- ALL DEVICE PARAMETERS -----");
     for (int i = 0; i < PARAM_MAX; i++){
-        ESP_LOGI("Serial parameters","----- ALL DEVICE PARAMETERS -----");
         ESP_LOGI("Serial parameters","#%i : %i",i,parameters[i]);
     }
+}
+
+void partition_debug(const esp_partition_t * partition, uint16_t * parameters){
+    printParameters(partition, parameters);
 }
 
 void main_serial(char* data){
     bool end = false;
     uint8_t i = 0;
     uint8_t adress = 0x0;
-    uint16_t position = 0;
+    uint16_t position = 0x00;
     int16_t value = 0; // could be negative !
     bool negative = false;
     uint16_t parameters[PARAM_MAX];
@@ -78,9 +94,18 @@ void main_serial(char* data){
     }
     ESP_LOGI("Serial partition","Initialized");
 
-    //partition_ini(var, log);
+    //partition_write_test(var);
 
-    if (data[0] > 64 && data[i] < 91){ //If upperCase
+    /*
+    esp_err_t err = esp_partition_erase_range(var, 0x00, 4096);
+    if (err != ESP_OK){
+            ESP_LOGI("Serial ERROR","Could not erase data");
+    }
+    esp_partition_write(var, 0x01, 0xA2, 4);
+    */
+
+    if ((data[0] > 64) && (data[0] < 91)){ //If upperCase
+        ESP_LOGI("Serial info","Uppercase case");
         position = 0;
         value = 0;
         i = 0;
@@ -99,6 +124,8 @@ void main_serial(char* data){
         if (position > 0 && position < PARAM_MAX){
             partition_write(var ,position, value);
         }
+        printParameters(var, parameters);
+        //partition_debug(var, parameters);
         
     }
     else if (data[i] > 47 && data[i] < 58){ 
@@ -107,6 +134,7 @@ void main_serial(char* data){
     }
     
     else{
+        ESP_LOGI("Serial info","%c", data[0]);
         switch (data[0]){
             case 'h':
                 printHelp();
