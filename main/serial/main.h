@@ -21,23 +21,43 @@ void getTotalStorageSize(){
 
 void partition_read(const esp_partition_t * partition, uint8_t * adress, int16_t data){
     int size = 0 ;
-    // GET SIZE
+    // GET CORRECT SIZE !!!
     esp_err_t  err = esp_partition_read(partition, data, adress, size);
     if (err != ESP_OK){
-        ESP_LOGI("Serial ERROR","Could not read data");
+        ESP_LOGI("Serial read ERROR","Could not read data");
+    }
+    if (err == ESP_ERR_INVALID_ARG){
+        ESP_LOGI("Serial read ERROR","Offset exceed partition size !");
+    }
+    else if (err == ESP_ERR_INVALID_SIZE){
+        ESP_LOGI("Serial read ERROR","Wrong size, exceed partition size !");
     }
 }
 
 void partition_write(const esp_partition_t * partition, uint8_t adress, int16_t data){
     int size = 0;
-    // GET SIZE 
+    // GET CORRECT SIZE !!!
     esp_err_t  err = esp_partition_erase_range(partition, adress, 4096);
     if (err != ESP_OK){
-            ESP_LOGI("Serial ERROR","Could not erase data");
+            ESP_LOGI("Serial erase ERROR","Could not erase data");
     }
+    if (err == ESP_ERR_INVALID_ARG){
+        ESP_LOGI("Serial erase ERROR","Pointer to partition is NULL !");
+    }
+    else if (err == ESP_ERR_INVALID_SIZE){
+        ESP_LOGI("Serial erase ERROR","Exceed partition size !");
+    }
+
+
     err = esp_partition_write(partition, adress, (void *)data, size);
     if (err != ESP_OK){
-        ESP_LOGI("Serial ERROR","Could not write data");
+        ESP_LOGI("Serial write ERROR","Could not write data");
+    }
+    if (err == ESP_ERR_INVALID_ARG){
+        ESP_LOGI("Serial write ERROR","Offset exceed partition size !");
+    }
+    else if (err == ESP_ERR_INVALID_SIZE){
+        ESP_LOGI("Serial write ERROR","Wrong size, exceed partition size !");
     }
 }
 
@@ -45,6 +65,10 @@ void partition_write_test(const esp_partition_t * partition){
     esp_partition_erase_range(partition, 0x00, 4096);
     esp_partition_write(partition, 0x0001, (const void *) 0xA2, 2);
     ESP_LOGI("Serial test","TEST");
+}
+
+void partition_dump(){
+
 }
 
 void parameters_update(const esp_partition_t * var, uint16_t * parameters){
