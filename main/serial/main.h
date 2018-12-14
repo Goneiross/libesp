@@ -14,6 +14,11 @@
 
 #define PARAM_MAX 8
 
+void getTotalStorageSize(){
+    size_t size = spi_flash_get_chip_size();
+    ESP_LOGI("info","Chip size %d", size);
+}
+
 void partition_read(const esp_partition_t * partition, uint8_t * adress, int16_t data){
     int size = 0 ;
     // GET SIZE
@@ -77,6 +82,8 @@ void main_serial(char* data){
     int16_t value = 0; // could be negative !
     bool negative = false;
     uint16_t parameters[PARAM_MAX];
+
+    getTotalStorageSize();
 
     const esp_partition_t* var = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "var");
     if (var == NULL){
