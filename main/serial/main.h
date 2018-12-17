@@ -25,13 +25,13 @@ void partition_read(const esp_partition_t * partition, uint8_t * adress, int16_t
     // GET CORRECT SIZE !!!
     esp_err_t  err = esp_partition_read(partition, data, adress, size);
     if (err != ESP_OK){
-        ESP_LOGI("Serial read ERROR","Could not read data");
+        ESP_LOGE("Serial read ERROR","Could not read data");
     }
     if (err == ESP_ERR_INVALID_ARG){
-        ESP_LOGI("Serial read ERROR","Offset exceed partition size !");
+        ESP_LOGE("Serial read ERROR","Offset exceed partition size !");
     }
     else if (err == ESP_ERR_INVALID_SIZE){
-        ESP_LOGI("Serial read ERROR","Wrong size, exceed partition size !");
+        ESP_LOGE("Serial read ERROR","Wrong size, exceed partition size !");
     }
 }
 
@@ -40,25 +40,25 @@ void partition_write(const esp_partition_t * partition, uint8_t adress, int16_t 
     // GET CORRECT SIZE !!!
     esp_err_t  err = esp_partition_erase_range(partition, adress, 4096);
     if (err != ESP_OK){
-            ESP_LOGI("Serial erase ERROR","Could not erase data");
+            ESP_LOGE("Serial erase ERROR","Could not erase data");
     }
     if (err == ESP_ERR_INVALID_ARG){
-        ESP_LOGI("Serial erase ERROR","Pointer to partition is NULL !");
+        ESP_LOGE("Serial erase ERROR","Pointer to partition is NULL !");
     }
     else if (err == ESP_ERR_INVALID_SIZE){
-        ESP_LOGI("Serial erase ERROR","Exceed partition size !");
+        ESP_LOGE("Serial erase ERROR","Exceed partition size !");
     }
 
 
     err = esp_partition_write(partition, adress, (void *)data, size);
     if (err != ESP_OK){
-        ESP_LOGI("Serial write ERROR","Could not write data");
+        ESP_LOGE("Serial write ERROR","Could not write data");
     }
     if (err == ESP_ERR_INVALID_ARG){
-        ESP_LOGI("Serial write ERROR","Offset exceed partition size !");
+        ESP_LOGE("Serial write ERROR","Offset exceed partition size !");
     }
     else if (err == ESP_ERR_INVALID_SIZE){
-        ESP_LOGI("Serial write ERROR","Wrong size, exceed partition size !");
+        ESP_LOGE("Serial write ERROR","Wrong size, exceed partition size !");
     }
 }
 
@@ -66,7 +66,7 @@ void partition_test(const esp_partition_t * partition){
     char data [8] = {};
     partition_write(partition, 0x00, 0x2A);
     partition_read(partition, 0x00, data);
-    ESP_LOGI("Parition test", "%s\n", data);
+    ESP_LOGD("Parition test", "%s\n", data);
 }
 
 void partition_dump(){
@@ -113,15 +113,15 @@ void main_serial(char* data){
 
     const esp_partition_t* var = esp_partition_find_first(2, ESP_PARTITION_SUBTYPE_ANY, "var");
     if (var == NULL){
-        ESP_LOGI("Serial ERROR","No partition named var found");
-        ESP_LOGI("Serial ERROR","Restarting in 10 secs");
+        ESP_LOGE("Serial ERROR","No partition named var found");
+        ESP_LOGE("Serial ERROR","Restarting in 10 secs");
         vTaskDelay(10000/portTICK_RATE_MS);
         esp_restart();
     }
     const esp_partition_t* log = esp_partition_find_first(2, ESP_PARTITION_SUBTYPE_ANY, "log");
     if (log == NULL){
-        ESP_LOGI("Serial ERROR","No partition named log found");
-        ESP_LOGI("Serial ERROR","Restarting in 10 secs");
+        ESP_LOGE("Serial ERROR","No partition named log found");
+        ESP_LOGE("Serial ERROR","Restarting in 10 secs");
         vTaskDelay(10000/portTICK_RATE_MS);
         esp_restart();
     }
