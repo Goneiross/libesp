@@ -3,8 +3,13 @@
 
 #include "./serial/main.h"
 
-void app_main(){
+void task(){
     main_serial("B 1");
-    //main_serial("h");
+    vTaskDelete(NULL);
+}
+
+void app_main(){
+    
+    xTaskCreatePinnedToCore(&task,"task", 32000, NULL, 0 ,NULL, 0);
     
 }

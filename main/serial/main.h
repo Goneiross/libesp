@@ -14,15 +14,18 @@
 
 #define PARAM_MAX 8
 
+#define READ_WRITE_SIZE 4
+
 void getTotalStorageSize(){
     size_t size = spi_flash_get_chip_size();
     ESP_LOGI("info","Chip size %d", size);
 }
 
 void partition_read(const esp_partition_t * partition, uint8_t * adress, int16_t *data){ //CHECK POINTER
-    int size = 0 ;
-    // CHECK POINTER TO PARTITION
-    // GET CORRECT SIZE !!!
+    int size = READ_WRITE_SIZE ;
+    if (partition == NULL){
+        ESP_LOGE("Serial test ERROR","Pointer to partition is NULL !");
+    }
     esp_err_t  err = esp_partition_read(partition, data, adress, size);
     if (err != ESP_OK){
         ESP_LOGE("Serial read ERROR","Could not read data");
@@ -36,9 +39,11 @@ void partition_read(const esp_partition_t * partition, uint8_t * adress, int16_t
 }
 
 void partition_write(const esp_partition_t * partition, uint8_t adress, int16_t data){
-    int size = 0;
-    // GET CORRECT SIZE !!!
-    esp_err_t  err = esp_partition_erase_range(partition, adress, 4096);
+    int size = READ_WRITE_SIZE;
+    if (partition == NULL){
+        ESP_LOGE("Serial test ERROR","Pointer to partition is NULL !");
+    }
+    esp_err_t  err = esp_partition_erase_range(partition, (int)(adress / 4096), 4096);
     if (err != ESP_OK){
             ESP_LOGE("Serial erase ERROR","Could not erase data");
     }
@@ -49,6 +54,12 @@ void partition_write(const esp_partition_t * partition, uint8_t adress, int16_t 
         ESP_LOGE("Serial erase ERROR","Exceed partition size !");
     }
 
+    ESP_LOGE("test","size %d",(int)(size));
+    ESP_LOGE("test","adress %d",(int)(adress));
+    ESP_LOGE("test","data %d",data);
+    if (partition == NULL){
+        ESP_LOGE("Serial test ERROR","Pointer to partition is NULL !");
+    }
 
     err = esp_partition_write(partition, adress, (void *)data, size);
     if (err != ESP_OK){
@@ -60,13 +71,25 @@ void partition_write(const esp_partition_t * partition, uint8_t adress, int16_t 
     else if (err == ESP_ERR_INVALID_SIZE){
         ESP_LOGE("Serial write ERROR","Wrong size, exceed partition size !");
     }
+    ESP_LOGE("test","%d",(int)(adress));
 }
 
 void partition_test(const esp_partition_t * partition){
     char data [8] = {};
-    partition_write(partition, 0x00, 0x2A);
-    partition_read(partition, 0x00, data);
+    partition_write(partition, 0x01, 0x2A);
+    partition_read(partition, 0x01, data);
     ESP_LOGD("Parition test", "%s\n", data);
+}
+
+void spi_test(){
+    char data[READ_WRITE_SIZE];
+    ESP_LOGE("SPI TEST","Begin SPI");
+    spi_flash_erase_range(0x00110001, READ_WRITE_SIZE);
+    ESP_LOGE("SPI TEST","erase done");
+    spi_flash_write(0x00110001, 0x2A, READ_WRITE_SIZE);
+    ESP_LOGE("SPI TEST","write done");
+    spi_flash_write(0x00110001, data, READ_WRITE_SIZE);
+    ESP_LOGE("SPI TEST","read done : %s", data);
 }
 
 void partition_dump(){
@@ -127,6 +150,7 @@ void main_serial(char* data){
     }
     ESP_LOGI("Serial partition","Initialized");
 
+    spi_test();
     partition_test(var);
 
     if ((data[0] > 64) && (data[0] < 91)){ //If upperCase
