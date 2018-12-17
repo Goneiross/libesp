@@ -19,8 +19,9 @@ void getTotalStorageSize(){
     ESP_LOGI("info","Chip size %d", size);
 }
 
-void partition_read(const esp_partition_t * partition, uint8_t * adress, int16_t data){
+void partition_read(const esp_partition_t * partition, uint8_t * adress, int16_t *data){ //CHECK POINTER
     int size = 0 ;
+    // CHECK POINTER TO PARTITION
     // GET CORRECT SIZE !!!
     esp_err_t  err = esp_partition_read(partition, data, adress, size);
     if (err != ESP_OK){
@@ -61,10 +62,11 @@ void partition_write(const esp_partition_t * partition, uint8_t adress, int16_t 
     }
 }
 
-void partition_write_test(const esp_partition_t * partition){
-    esp_partition_erase_range(partition, 0x00, 4096);
-    esp_partition_write(partition, 0x0001, (const void *) 0xA2, 2);
-    ESP_LOGI("Serial test","TEST");
+void partition_test(const esp_partition_t * partition){
+    char data [8] = {};
+    partition_write(partition, 0x00, 0x2A);
+    partition_read(partition, 0x00, data);
+    ESP_LOGI("Parition test", "%s\n", data);
 }
 
 void partition_dump(){
@@ -109,14 +111,14 @@ void main_serial(char* data){
 
     getTotalStorageSize();
 
-    const esp_partition_t* var = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "var");
+    const esp_partition_t* var = esp_partition_find_first(2, ESP_PARTITION_SUBTYPE_ANY, "var");
     if (var == NULL){
         ESP_LOGI("Serial ERROR","No partition named var found");
         ESP_LOGI("Serial ERROR","Restarting in 10 secs");
         vTaskDelay(10000/portTICK_RATE_MS);
         esp_restart();
     }
-    const esp_partition_t* log = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "log");
+    const esp_partition_t* log = esp_partition_find_first(2, ESP_PARTITION_SUBTYPE_ANY, "log");
     if (log == NULL){
         ESP_LOGI("Serial ERROR","No partition named log found");
         ESP_LOGI("Serial ERROR","Restarting in 10 secs");
@@ -125,15 +127,7 @@ void main_serial(char* data){
     }
     ESP_LOGI("Serial partition","Initialized");
 
-    //partition_write_test(var);
-
-    /*
-    esp_err_t err = esp_partition_erase_range(var, 0x00, 4096);
-    if (err != ESP_OK){
-            ESP_LOGI("Serial ERROR","Could not erase data");
-    }
-    esp_partition_write(var, 0x01, 0xA2, 4);
-    */
+    partition_test(var);
 
     if ((data[0] > 64) && (data[0] < 91)){ //If upperCase
         ESP_LOGI("Serial info","Uppercase case");
