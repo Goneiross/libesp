@@ -16,89 +16,62 @@
 
 #define READ_WRITE_SIZE 4
 
+#define OFFSET 0x9000
+
 void getTotalStorageSize(){
     size_t size = spi_flash_get_chip_size();
     ESP_LOGI("info","Chip size %d", size);
 }
 
-void partition_read(const esp_partition_t * partition, uint8_t * adress, int16_t *data){ //CHECK POINTER
-    int size = READ_WRITE_SIZE ;
-    if (partition == NULL){
-        ESP_LOGE("Serial test ERROR","Pointer to partition is NULL !");
-    }
-    esp_err_t  err = esp_partition_read(partition, data, adress, size);
-    if (err != ESP_OK){
-        ESP_LOGE("Serial read ERROR","Could not read data");
-    }
-    if (err == ESP_ERR_INVALID_ARG){
-        ESP_LOGE("Serial read ERROR","Offset exceed partition size !");
-    }
-    else if (err == ESP_ERR_INVALID_SIZE){
-        ESP_LOGE("Serial read ERROR","Wrong size, exceed partition size !");
-    }
+void read(int position, char* data[]){
+    int size = sizeof(data);
+    spi_flash_read(OFFSET + position, data, size);
 }
 
-void partition_write(const esp_partition_t * partition, uint8_t adress, int16_t data){
-    int size = READ_WRITE_SIZE;
-    if (partition == NULL){
-        ESP_LOGE("Serial test ERROR","Pointer to partition is NULL !");
-    }
-    esp_err_t  err = esp_partition_erase_range(partition, (int)(adress / 4096), 4096);
-    if (err != ESP_OK){
-            ESP_LOGE("Serial erase ERROR","Could not erase data");
-    }
-    if (err == ESP_ERR_INVALID_ARG){
-        ESP_LOGE("Serial erase ERROR","Pointer to partition is NULL !");
-    }
-    else if (err == ESP_ERR_INVALID_SIZE){
-        ESP_LOGE("Serial erase ERROR","Exceed partition size !");
-    }
-
-    ESP_LOGE("test","size %d",(int)(size));
-    ESP_LOGE("test","adress %d",(int)(adress));
-    ESP_LOGE("test","data %d",data);
-    if (partition == NULL){
-        ESP_LOGE("Serial test ERROR","Pointer to partition is NULL !");
-    }
-
-    err = esp_partition_write(partition, adress, (void *)data, size);
-    if (err != ESP_OK){
-        ESP_LOGE("Serial write ERROR","Could not write data");
-    }
-    if (err == ESP_ERR_INVALID_ARG){
-        ESP_LOGE("Serial write ERROR","Offset exceed partition size !");
-    }
-    else if (err == ESP_ERR_INVALID_SIZE){
-        ESP_LOGE("Serial write ERROR","Wrong size, exceed partition size !");
-    }
-    ESP_LOGE("test","%d",(int)(adress));
-}
-
-void partition_test(const esp_partition_t * partition){
-    char data [8] = {};
-    partition_write(partition, 0x01, 0x2A);
-    partition_read(partition, 0x01, data);
-    ESP_LOGD("Parition test", "%s\n", data);
+void write(int position, int value){
+    int size = 0;
+    int tmp = value;
+    do
+    {
+        tmp /= 10;
+        size += 1;
+    } while (tmp > 0);
+    char data[size];
+    int i = 0;
+    do
+    {
+        data[size - 1 - i] = value % 10 + '0';
+        value /= 10;
+    } while (value > 0);
+    ESP_LOGI("Write","write %s at %d ",data,OFFSET + position);
+    spi_flash_erase_range(OFFSET, 4096);
+    spi_flash_write(OFFSET + position, data, size);
 }
 
 void spi_test(){
-    char data[READ_WRITE_SIZE];
+    char buffer[4] = {0};
+    char data[4] = "1111";
+    ESP_LOGI("test","%d", sizeof(buffer));
     ESP_LOGE("SPI TEST","Begin SPI");
-    spi_flash_erase_range(0x00110001, READ_WRITE_SIZE);
-    ESP_LOGE("SPI TEST","erase done");
-    spi_flash_write(0x00110001, 0x2A, READ_WRITE_SIZE);
-    ESP_LOGE("SPI TEST","write done");
-    spi_flash_write(0x00110001, data, READ_WRITE_SIZE);
-    ESP_LOGE("SPI TEST","read done : %s", data);
+    spi_flash_erase_range(OFFSET, 2*4096);
+    ESP_LOGE("SPI TEST","Erase done");
+    spi_flash_read(OFFSET, buffer, 4);
+    ESP_LOGE("SPI TEST","First read done : %s", buffer);
+    spi_flash_write(OFFSET, data, 4);
+    ESP_LOGE("SPI TEST","Write done");
+    spi_flash_read(OFFSET, buffer, 4);
+    ESP_LOGE("SPI TEST","Second read done : %s", buffer);
+    ESP_LOGI("test","%d", sizeof(buffer));
+    ESP_LOGE("SPI TEST","Done SPI");
 }
 
 void partition_dump(){
 
 }
 
-void parameters_update(const esp_partition_t * var, uint16_t * parameters){
+void parameters_update(uint16_t * parameters){
     for (uint8_t i = 0; i < PARAM_MAX; i++){
-        partition_read(var, (uint8_t *) ADRESS_BEGIN + i, parameters[i]);
+        read((uint8_t *) ADRESS_BEGIN + i, parameters[i]);
     }
 }
 
@@ -111,8 +84,8 @@ void printHelp(){
     specificHelp();
 }
 
-void printParameters(const esp_partition_t * var, uint16_t *parameters){
-    parameters_update(var, parameters);
+void printParameters(uint16_t *parameters){
+    parameters_update(parameters);
     ESP_LOGI("Serial parameters","----- ALL DEVICE PARAMETERS -----");
     for (int i = 0; i < PARAM_MAX; i++){
         ESP_LOGI("Serial parameters","#%i : %i",i,parameters[i]);
@@ -120,7 +93,7 @@ void printParameters(const esp_partition_t * var, uint16_t *parameters){
 }
 
 void partition_debug(const esp_partition_t * partition, uint16_t * parameters){
-    printParameters(partition, parameters);
+    printParameters(parameters);
 }
 
 void main_serial(char* data){
@@ -134,24 +107,7 @@ void main_serial(char* data){
 
     getTotalStorageSize();
 
-    const esp_partition_t* var = esp_partition_find_first(2, ESP_PARTITION_SUBTYPE_ANY, "var");
-    if (var == NULL){
-        ESP_LOGE("Serial ERROR","No partition named var found");
-        ESP_LOGE("Serial ERROR","Restarting in 10 secs");
-        vTaskDelay(10000/portTICK_RATE_MS);
-        esp_restart();
-    }
-    const esp_partition_t* log = esp_partition_find_first(2, ESP_PARTITION_SUBTYPE_ANY, "log");
-    if (log == NULL){
-        ESP_LOGE("Serial ERROR","No partition named log found");
-        ESP_LOGE("Serial ERROR","Restarting in 10 secs");
-        vTaskDelay(10000/portTICK_RATE_MS);
-        esp_restart();
-    }
-    ESP_LOGI("Serial partition","Initialized");
-
-    spi_test();
-    partition_test(var);
+    // spi_test();
 
     if ((data[0] > 64) && (data[0] < 91)){ //If upperCase
         ESP_LOGI("Serial info","Uppercase case");
@@ -171,10 +127,10 @@ void main_serial(char* data){
         ESP_LOGI("Serial info", "adress: %d, new value: %d" ,position, value);
         if (negative){value *= -1;}
         if (position > 0 && position < PARAM_MAX){
-            partition_write(var ,position, value);
+            ESP_LOGI("Serial info","BEGIN");
+            write(position, value);
+            ESP_LOGI("Serial info","DONE");
         }
-        printParameters(var, parameters);
-        //partition_debug(var, parameters);
         
     }
     else if (data[i] > 47 && data[i] < 58){ 
@@ -192,7 +148,7 @@ void main_serial(char* data){
             case 'u' :
                 utilityCommand(data);
             case 'p' :
-                printParameters(var, parameters);
+                printParameters(parameters);
             default :
                 specificCommand(data);
         }
